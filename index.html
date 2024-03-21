@@ -4,18 +4,80 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>College Basketball Scores</title>
-<link rel="stylesheet" href="styles.css">
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    header {
+        background-color: #333;
+        color: #fff;
+        padding: 20px;
+        text-align: center;
+    }
+
+    main {
+        padding: 20px;
+    }
+
+    #update-message {
+        margin-bottom: 10px;
+        font-style: italic;
+    }
+
+    #game-list {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    #game-list li {
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    #game-list li span {
+        flex: 1;
+        text-align: center;
+    }
+
+    #refresh-button {
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 8px;
+    }
+</style>
 </head>
 <body>
 <header>
     <h1>College Basketball Scores</h1>
 </header>
 <main>
+    <div id="update-message">Scores are updating...</div>
     <ul id="game-list"></ul>
+    <button id="refresh-button" onclick="fetchScores()">
+        Refresh
+    </button>
 </main>
 <script>
     // Function to fetch data from the API and update the game list
     function fetchScores() {
+        const updateMessage = document.getElementById('update-message');
+        updateMessage.textContent = 'Scores are updating...';
+
         const url = 'https://api.sportsdata.io/v3/cbb/scores/json/GamesByDate/2024-03-20?key=d9390cfaf8aa49dc84c1981109dbe3cd';
 
         // Fetch data from the API
@@ -28,9 +90,11 @@
             })
             .then(data => {
                 updateGameList(data);
+                updateMessage.textContent = ''; // Clear update message
             })
             .catch(error => {
                 console.error('There was a problem with the fetch operation:', error);
+                updateMessage.textContent = 'Failed to update scores';
             });
     }
 
