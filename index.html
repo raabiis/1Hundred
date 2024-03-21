@@ -116,21 +116,18 @@
         gameList.innerHTML = '';
 
         games.forEach(game => {
-            const timeLeft = game.Status === 'Final' ? 'FINAL' : game.TimeRemainingMinutes !== null ? `Time Left: ${game.TimeRemainingMinutes} mins` : '';
-            const winner = game.HomeTeamScore > game.AwayTeamScore ? game.HomeTeam : game.AwayTeam;
-            const loser = game.HomeTeamScore < game.AwayTeamScore ? game.HomeTeam : game.AwayTeam;
-            const winnerLastDigit = winner.charAt(winner.length - 1);
-            const loserLastDigit = loser.charAt(loser.length - 1);
+            if (game.AwayTeamScore !== null && game.HomeTeamScore !== null && game.Status === 'InProgress') {
+                const timeLeft = `Time Left: ${game.TimeRemainingMinutes} mins`;
 
-            const listItem = document.createElement('li');
-            listItem.innerHTML = `
-                <span>${game.AwayTeam} ${game.AwayTeamScore}</span>
-                <span>vs</span>
-                <span>${game.HomeTeam} ${game.HomeTeamScore}</span>
-                <span>${timeLeft}</span>
-                <span>Winner: ${winnerLastDigit} Loser: ${loserLastDigit}</span>
-            `;
-            gameList.appendChild(listItem);
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    <span>${game.AwayTeam} ${game.AwayTeamScore}</span>
+                    <span>vs</span>
+                    <span>${game.HomeTeam} ${game.HomeTeamScore}</span>
+                    <span>${timeLeft}</span>
+                `;
+                gameList.appendChild(listItem);
+            }
         });
     }
 
@@ -142,9 +139,9 @@
         lastRefresh.textContent = formattedTime;
     }
 
-    // Fetch scores initially and then every 5 seconds
+    // Fetch scores initially and then every 30 seconds
     fetchScores();
-    setInterval(fetchScores, 5000);
+    setInterval(fetchScores, 30000);
 </script>
 </body>
 </html>
