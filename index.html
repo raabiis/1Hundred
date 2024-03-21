@@ -4,12 +4,44 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Live Scores</title>
-<link rel="stylesheet" href="styles.css">
+<style>
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.game {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+
+.game img {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+}
+
+.team-name {
+    flex: 1;
+}
+
+.score {
+    margin: 0 20px;
+}
+
+.status {
+    font-weight: bold;
+}
+</style>
 </head>
 <body>
 <div class="container">
     <h1>Live Scores</h1>
-    <ul id="game-list"></ul>
+    <div id="game-list"></div>
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -28,52 +60,56 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         todayGames.forEach(game => {
-            if (game.Status === 'Scheduled') {
-                const startTime = new Date(game.DateTime);
-                const formattedTime = startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                const awayTeamLogo = game.AwayTeam.toLowerCase().replace(/ /g, '-') + '.png';
-                const homeTeamLogo = game.HomeTeam.toLowerCase().replace(/ /g, '-') + '.png';
+            const awayTeamLogo = game.AwayTeam.toLowerCase().replace(/ /g, '-') + '.png';
+            const homeTeamLogo = game.HomeTeam.toLowerCase().replace(/ /g, '-') + '.png';
+            const gameStatus = game.Status === 'Scheduled' ? 'Scheduled' : 'In Progress';
+            const gameScore = game.Status === 'Scheduled' ? '-' : `${game.AwayTeamScore} - ${game.HomeTeamScore}`;
 
-                const listItem = document.createElement('li');
-                listItem.innerHTML = `
-                    <img src="logos/${awayTeamLogo}" alt="${game.AwayTeam} Logo">
-                    <span>${game.AwayTeam}</span>
-                    <span>vs</span>
-                    <span>${game.HomeTeam}</span>
-                    <img src="logos/${homeTeamLogo}" alt="${game.HomeTeam} Logo">
-                    <span>${formattedTime}</span>
-                `;
-                gameList.appendChild(listItem);
-            } else if (game.Status === 'InProgress') {
-                const awayTeamScore = game.AwayTeamScore !== null ? game.AwayTeamScore : '';
-                const homeTeamScore = game.HomeTeamScore !== null ? game.HomeTeamScore : '';
-                const awayTeamLogo = game.AwayTeam.toLowerCase().replace(/ /g, '-') + '.png';
-                const homeTeamLogo = game.HomeTeam.toLowerCase().replace(/ /g, '-') + '.png';
-
-                const listItem = document.createElement('li');
-                listItem.innerHTML = `
-                    <img src="logos/${awayTeamLogo}" alt="${game.AwayTeam} Logo">
-                    <span>${game.AwayTeam} ${awayTeamScore}</span>
-                    <span>-</span>
-                    <span>${homeTeamScore} ${game.HomeTeam}</span>
-                    <img src="logos/${homeTeamLogo}" alt="${game.HomeTeam} Logo">
-                    <span>In Progress</span>
-                `;
-                gameList.appendChild(listItem);
-            }
+            const gameDiv = document.createElement('div');
+            gameDiv.classList.add('game');
+            gameDiv.innerHTML = `
+                <img src="logos/${awayTeamLogo}" alt="${game.AwayTeam} Logo">
+                <div class="team-name">${game.AwayTeam}</div>
+                <div class="score">${gameScore}</div>
+                <div class="team-name">${game.HomeTeam}</div>
+                <img src="logos/${homeTeamLogo}" alt="${game.HomeTeam} Logo">
+                <div class="status">${gameStatus}</div>
+            `;
+            gameList.appendChild(gameDiv);
         });
     }
 
     // Function to fetch scores from the server
     function fetchScores() {
-        fetch('fetch_scores.php')
-            .then(response => response.json())
-            .then(data => {
-                updateGameList(data.games);
-            })
-            .catch(error => {
-                console.error('Error fetching scores:', error);
-            });
+        // Simulating fetching data from an API endpoint or JSON file
+        const gamesData = [
+            {
+                "DateTime": "2024-03-22T14:30:00",
+                "AwayTeam": "Team A",
+                "HomeTeam": "Team B",
+                "AwayTeamScore": null,
+                "HomeTeamScore": null,
+                "Status": "Scheduled"
+            },
+            {
+                "DateTime": "2024-03-22T17:00:00",
+                "AwayTeam": "Team C",
+                "HomeTeam": "Team D",
+                "AwayTeamScore": 2,
+                "HomeTeamScore": 1,
+                "Status": "Final"
+            },
+            {
+                "DateTime": "2024-03-22T19:30:00",
+                "AwayTeam": "Team E",
+                "HomeTeam": "Team F",
+                "AwayTeamScore": 1,
+                "HomeTeamScore": 1,
+                "Status": "InProgress"
+            }
+        ];
+
+        updateGameList(gamesData);
     }
 
     // Fetch scores initially and set interval for periodic updates
