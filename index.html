@@ -18,12 +18,16 @@ document.addEventListener('DOMContentLoaded', function () {
         const gameList = document.getElementById('game-list');
         gameList.innerHTML = '';
 
-        // Sort games by start time
-        games.sort((a, b) => {
+        // Filter games played today
+        const today = new Date().toISOString().slice(0, 10);
+        const todayGames = games.filter(game => game.DateTime.includes(today));
+
+        // Sort today's games by start time
+        todayGames.sort((a, b) => {
             return new Date(a.DateTime) - new Date(b.DateTime);
         });
 
-        games.forEach(game => {
+        todayGames.forEach(game => {
             if (game.Status === 'Scheduled') {
                 const startTime = new Date(game.DateTime);
                 const formattedTime = startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
