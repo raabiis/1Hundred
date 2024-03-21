@@ -3,84 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>College Basketball Scores</title>
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-    }
-
-    header {
-        background-color: #333;
-        color: #fff;
-        padding: 20px;
-        text-align: center;
-    }
-
-    main {
-        padding: 20px;
-    }
-
-    #game-list {
-        list-style-type: none;
-        padding: 0;
-    }
-
-    #game-list li {
-        margin-bottom: 20px;
-        border: 1px solid #ccc;
-        padding: 20px;
-        display: flex;
-        align-items: center;
-    }
-
-    #game-list li img {
-        width: 50px;
-        height: 50px;
-        margin-right: 20px;
-    }
-
-    #game-list li span {
-        flex: 1;
-        text-align: center;
-    }
-</style>
+<title>Live Scores</title>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<header>
-    <h1>College Basketball Scores</h1>
-</header>
-<main>
-    <h2>Upcoming Games</h2>
+<div class="container">
+    <h1>Live Scores</h1>
     <ul id="game-list"></ul>
-</main>
+</div>
 <script>
-    // Function to fetch data from the API and update the game list
-    function fetchScores() {
-        const currentDate = new Date().toISOString().split('T')[0];
-        const url = `https://api.sportsdata.io/v3/cbb/scores/json/GamesByDate/${currentDate}?key=d9390cfaf8aa49dc84c1981109dbe3cd`;
-
-        // Fetch data from the API
-        fetch(url)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                updateGameList(data);
-            })
-            .catch(error => {
-                console.error('There was a problem with the fetch operation:', error);
-            });
-    }
-
+document.addEventListener('DOMContentLoaded', function () {
     // Function to update the game list with fetched data
     function updateGameList(games) {
         const gameList = document.getElementById('game-list');
         gameList.innerHTML = '';
+
+        // Sort games by start time
+        games.sort((a, b) => {
+            return new Date(a.DateTime) - new Date(b.DateTime);
+        });
 
         games.forEach(game => {
             if (game.Status === 'Scheduled') {
@@ -99,12 +40,42 @@
                     <span>${formattedTime}</span>
                 `;
                 gameList.appendChild(listItem);
+            } else if (game.Status === 'InProgress') {
+                const awayTeamScore = game.AwayTeamScore !== null ? game.AwayTeamScore : '';
+                const homeTeamScore = game.HomeTeamScore !== null ? game.HomeTeamScore : '';
+                const awayTeamLogo = game.AwayTeam.toLowerCase().replace(/ /g, '-') + '.png';
+                const homeTeamLogo = game.HomeTeam.toLowerCase().replace(/ /g, '-') + '.png';
+
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    <img src="logos/${awayTeamLogo}" alt="${game.AwayTeam} Logo">
+                    <span>${game.AwayTeam} ${awayTeamScore}</span>
+                    <span>-</span>
+                    <span>${homeTeamScore} ${game.HomeTeam}</span>
+                    <img src="logos/${homeTeamLogo}" alt="${game.HomeTeam} Logo">
+                    <span>In Progress</span>
+                `;
+                gameList.appendChild(listItem);
             }
         });
     }
 
-    // Fetch scores initially
+    // Function to fetch scores from the server
+    function fetchScores() {
+        fetch('fetch_scores.php')
+            .then(response => response.json())
+            .then(data => {
+                updateGameList(data.games);
+            })
+            .catch(error => {
+                console.error('Error fetching scores:', error);
+            });
+    }
+
+    // Fetch scores initially and set interval for periodic updates
     fetchScores();
+    setInterval(fetchScores, 30000); // Update every 30 seconds
+});
 </script>
 </body>
 </html>
