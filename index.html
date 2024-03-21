@@ -22,51 +22,28 @@
         padding: 20px;
     }
 
-    #update-message {
-        margin-bottom: 10px;
-        font-style: italic;
-    }
-
     #game-list {
         list-style-type: none;
         padding: 0;
     }
 
     #game-list li {
-        margin-bottom: 10px;
+        margin-bottom: 20px;
         border: 1px solid #ccc;
-        padding: 10px;
+        padding: 20px;
         display: flex;
-        justify-content: space-between;
         align-items: center;
+    }
+
+    #game-list li img {
+        width: 50px;
+        height: 50px;
+        margin-right: 20px;
     }
 
     #game-list li span {
         flex: 1;
         text-align: center;
-    }
-
-    #refresh-info {
-        margin-top: 20px;
-        text-align: center;
-    }
-
-    #refresh-info span {
-        font-style: italic;
-    }
-
-    #refresh-button {
-        background-color: #4CAF50;
-        border: none;
-        color: white;
-        padding: 15px 32px;
-        text-align: center;
-        text-decoration: none;
-        display: inline-block;
-        font-size: 16px;
-        margin: 4px 2px;
-        cursor: pointer;
-        border-radius: 8px;
     }
 </style>
 </head>
@@ -75,19 +52,12 @@
     <h1>College Basketball Scores</h1>
 </header>
 <main>
-    <div id="update-message">Scores are updating...</div>
+    <h2>Upcoming Games</h2>
     <ul id="game-list"></ul>
-    <div id="refresh-info">Last refreshed: <span id="last-refresh"></span></div>
-    <button id="refresh-button" onclick="fetchScores()">
-        Refresh
-    </button>
 </main>
 <script>
     // Function to fetch data from the API and update the game list
     function fetchScores() {
-        const updateMessage = document.getElementById('update-message');
-        updateMessage.textContent = 'Scores are updating...';
-
         const currentDate = new Date().toISOString().split('T')[0];
         const url = `https://api.sportsdata.io/v3/cbb/scores/json/GamesByDate/${currentDate}?key=d9390cfaf8aa49dc84c1981109dbe3cd`;
 
@@ -101,12 +71,9 @@
             })
             .then(data => {
                 updateGameList(data);
-                updateMessage.textContent = ''; // Clear update message
-                updateLastRefresh(); // Update last refresh time
             })
             .catch(error => {
                 console.error('There was a problem with the fetch operation:', error);
-                updateMessage.textContent = 'Failed to update scores';
             });
     }
 
@@ -116,32 +83,28 @@
         gameList.innerHTML = '';
 
         games.forEach(game => {
-            if (game.AwayTeamScore !== null && game.HomeTeamScore !== null && game.Status === 'InProgress') {
-                const timeLeft = `Time Left: ${game.TimeRemainingMinutes} mins`;
+            if (game.Status === 'Scheduled') {
+                const startTime = new Date(game.DateTime);
+                const formattedTime = startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const awayTeamLogo = game.AwayTeam.toLowerCase().replace(/ /g, '-') + '.png';
+                const homeTeamLogo = game.HomeTeam.toLowerCase().replace(/ /g, '-') + '.png';
 
                 const listItem = document.createElement('li');
                 listItem.innerHTML = `
-                    <span>${game.AwayTeam} ${game.AwayTeamScore}</span>
+                    <img src="logos/${awayTeamLogo}" alt="${game.AwayTeam} Logo">
+                    <span>${game.AwayTeam}</span>
                     <span>vs</span>
-                    <span>${game.HomeTeam} ${game.HomeTeamScore}</span>
-                    <span>${timeLeft}</span>
+                    <span>${game.HomeTeam}</span>
+                    <img src="logos/${homeTeamLogo}" alt="${game.HomeTeam} Logo">
+                    <span>${formattedTime}</span>
                 `;
                 gameList.appendChild(listItem);
             }
         });
     }
 
-    // Function to update the last refresh time
-    function updateLastRefresh() {
-        const lastRefresh = document.getElementById('last-refresh');
-        const now = new Date();
-        const formattedTime = now.toLocaleTimeString();
-        lastRefresh.textContent = formattedTime;
-    }
-
-    // Fetch scores initially and then every 30 seconds
+    // Fetch scores initially
     fetchScores();
-    setInterval(fetchScores, 30000);
 </script>
 </body>
 </html>
