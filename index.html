@@ -46,6 +46,15 @@
         text-align: center;
     }
 
+    #refresh-info {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    #refresh-info span {
+        font-style: italic;
+    }
+
     #refresh-button {
         background-color: #4CAF50;
         border: none;
@@ -68,6 +77,7 @@
 <main>
     <div id="update-message">Scores are updating...</div>
     <ul id="game-list"></ul>
+    <div id="refresh-info">Last refreshed: <span id="last-refresh"></span></div>
     <button id="refresh-button" onclick="fetchScores()">
         Refresh
     </button>
@@ -91,6 +101,7 @@
             .then(data => {
                 updateGameList(data);
                 updateMessage.textContent = ''; // Clear update message
+                updateLastRefresh(); // Update last refresh time
             })
             .catch(error => {
                 console.error('There was a problem with the fetch operation:', error);
@@ -106,16 +117,29 @@
         games.forEach(game => {
             if (game.HomeTeam !== null && game.AwayTeam !== null && game.HomeTeamScore !== null && game.AwayTeamScore !== null) {
                 const timeLeft = game.Status === 'Final' ? 'FINAL' : game.TimeRemainingMinutes !== null ? `Time Left: ${game.TimeRemainingMinutes} mins` : '';
-                const listItem = document.createElement('li');
-                listItem.innerHTML = `
-                    <span>${game.AwayTeam} ${game.AwayTeamScore}</span>
-                    <span>vs</span>
-                    <span>${game.HomeTeam} ${game.HomeTeamScore}</span>
-                    <span>${timeLeft}</span>
-                `;
-                gameList.appendChild(listItem);
+                if (timeLeft !== 'FINAL') {
+                    const listItem = document.createElement('li');
+                    const winner = game.HomeTeamScore > game.AwayTeamScore ? game.HomeTeam : game.AwayTeam;
+                    const loser = game.HomeTeamScore < game.AwayTeamScore ? game.HomeTeam : game.AwayTeam;
+                    listItem.innerHTML = `
+                        <span>${game.AwayTeam} ${game.AwayTeamScore}</span>
+                        <span>vs</span>
+                        <span>${game.HomeTeam} ${game.HomeTeamScore}</span>
+                        <span>${timeLeft}</span>
+                        <span>Winner: ${winner.charAt(winner.length - 1)} Loser: ${loser.charAt(loser.length - 1)}</span>
+                    `;
+                    gameList.appendChild(listItem);
+                }
             }
         });
+    }
+
+    // Function to update the last refresh time
+    function updateLastRefresh() {
+        const lastRefresh = document.getElementById('last-refresh');
+        const now = new Date();
+        const formattedTime = now.toLocaleTimeString();
+        lastRefresh.textContent = formattedTime;
     }
 
     // Fetch scores initially and then every 5 seconds
