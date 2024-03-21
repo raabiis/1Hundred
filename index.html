@@ -88,7 +88,8 @@
         const updateMessage = document.getElementById('update-message');
         updateMessage.textContent = 'Scores are updating...';
 
-        const url = 'https://api.sportsdata.io/v3/cbb/scores/json/GamesByDate/2024-03-20?key=d9390cfaf8aa49dc84c1981109dbe3cd';
+        const currentDate = new Date().toISOString().split('T')[0];
+        const url = `https://api.sportsdata.io/v3/cbb/scores/json/GamesByDate/${currentDate}?key=d9390cfaf8aa49dc84c1981109dbe3cd`;
 
         // Fetch data from the API
         fetch(url)
@@ -115,22 +116,21 @@
         gameList.innerHTML = '';
 
         games.forEach(game => {
-            if (game.HomeTeam !== null && game.AwayTeam !== null && game.HomeTeamScore !== null && game.AwayTeamScore !== null) {
-                const timeLeft = game.Status === 'Final' ? 'FINAL' : game.TimeRemainingMinutes !== null ? `Time Left: ${game.TimeRemainingMinutes} mins` : '';
-                if (timeLeft !== 'FINAL') {
-                    const listItem = document.createElement('li');
-                    const winner = game.HomeTeamScore > game.AwayTeamScore ? game.HomeTeam : game.AwayTeam;
-                    const loser = game.HomeTeamScore < game.AwayTeamScore ? game.HomeTeam : game.AwayTeam;
-                    listItem.innerHTML = `
-                        <span>${game.AwayTeam} ${game.AwayTeamScore}</span>
-                        <span>vs</span>
-                        <span>${game.HomeTeam} ${game.HomeTeamScore}</span>
-                        <span>${timeLeft}</span>
-                        <span>Winner: ${winner.charAt(winner.length - 1)} Loser: ${loser.charAt(loser.length - 1)}</span>
-                    `;
-                    gameList.appendChild(listItem);
-                }
-            }
+            const timeLeft = game.Status === 'Final' ? 'FINAL' : game.TimeRemainingMinutes !== null ? `Time Left: ${game.TimeRemainingMinutes} mins` : '';
+            const winner = game.HomeTeamScore > game.AwayTeamScore ? game.HomeTeam : game.AwayTeam;
+            const loser = game.HomeTeamScore < game.AwayTeamScore ? game.HomeTeam : game.AwayTeam;
+            const winnerLastDigit = winner.charAt(winner.length - 1);
+            const loserLastDigit = loser.charAt(loser.length - 1);
+
+            const listItem = document.createElement('li');
+            listItem.innerHTML = `
+                <span>${game.AwayTeam} ${game.AwayTeamScore}</span>
+                <span>vs</span>
+                <span>${game.HomeTeam} ${game.HomeTeamScore}</span>
+                <span>${timeLeft}</span>
+                <span>Winner: ${winnerLastDigit} Loser: ${loserLastDigit}</span>
+            `;
+            gameList.appendChild(listItem);
         });
     }
 
