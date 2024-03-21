@@ -1,1 +1,62 @@
-<h2>Hello World</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>College Basketball Scores</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+    <h1>College Basketball Scores</h1>
+</header>
+<main>
+    <ul id="game-list"></ul>
+</main>
+<script>
+    // Function to fetch data from the API and update the game list
+    function fetchScores() {
+        const url = 'https://api.sportsdata.io/v3/cbb/scores/json/GamesByDate/2024-03-20?key=d9390cfaf8aa49dc84c1981109dbe3cd';
+
+        // Fetch data from the API
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                updateGameList(data);
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+    }
+
+    // Function to update the game list with fetched data
+    function updateGameList(games) {
+        const gameList = document.getElementById('game-list');
+        gameList.innerHTML = '';
+
+        games.forEach(game => {
+            if (game.HomeTeam !== null && game.AwayTeam !== null && game.HomeTeamScore !== null && game.AwayTeamScore !== null) {
+                const timeLeft = game.Status === 'Final' ? 'FINAL' : game.TimeRemainingMinutes !== null ? `Time Left: ${game.TimeRemainingMinutes} mins` : '';
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    <span>${game.AwayTeam} ${game.AwayTeamScore}</span>
+                    <span>vs</span>
+                    <span>${game.HomeTeam} ${game.HomeTeamScore}</span>
+                    <span>${timeLeft}</span>
+                `;
+                gameList.appendChild(listItem);
+            }
+        });
+    }
+
+    // Fetch scores initially and then every 5 seconds
+    fetchScores();
+    setInterval(fetchScores, 5000);
+</script>
+</body>
+</html>
